@@ -4,7 +4,7 @@
   "editor": "wokwi",
   "parts": [
     { "type": "wokwi-esp32-devkit-v1", "id": "esp", "top": 10, "left": 35, "attrs": {} },
-    { "type": "wokwi-dht22", "id": "dht", "top": -85, "left": 285, "attrs": { "humidity": "40", "temperature": "25" } },
+    { "type": "wokwi-dht22", "id": "dht", "top": -85, "left": 285, "attrs": { "humidity": "80", "temperature": "25" } },
     { "type": "wokwi-photoresistor-sensor", "id": "ldr", "top": 35, "left": 330, "attrs": {} },
     { "type": "wokwi-pushbutton", "id": "btnN", "top": 200, "left": -115, "attrs": { "color": "green", "label": "N", "key": "N" } },
     { "type": "wokwi-pushbutton", "id": "btnP", "top": 255, "left": -115, "attrs": { "color": "green", "label": "P", "key": "P" } },
@@ -33,6 +33,9 @@
     ["lcd:SDA", "esp:D21", "blue", []],
     ["lcd:SCL", "esp:D22", "yellow", []]
   ],
-  "serialMonitor": { "display": "always", "newline": "lf" },
+  "serialMonitor": {
+    "display": "always",
+    "newline": "lf"
+  },
   "dependencies": {}
 }
