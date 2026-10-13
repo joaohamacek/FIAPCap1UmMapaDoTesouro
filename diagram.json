@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "author": "FarmTech Solutions - FIAP",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-esp32-devkit-v1", "id": "esp", "top": 10, "left": 35, "attrs": {} },
+    { "type": "wokwi-dht22", "id": "dht", "top": -85, "left": 285, "attrs": { "humidity": "40", "temperature": "25" } },
+    { "type": "wokwi-photoresistor-sensor", "id": "ldr", "top": 35, "left": 330, "attrs": {} },
+    { "type": "wokwi-pushbutton", "id": "btnN", "top": 200, "left": -115, "attrs": { "color": "green", "label": "N", "key": "N" } },
+    { "type": "wokwi-pushbutton", "id": "btnP", "top": 255, "left": -115, "attrs": { "color": "green", "label": "P", "key": "P" } },
+    { "type": "wokwi-pushbutton", "id": "btnK", "top": 310, "left": -115, "attrs": { "color": "green", "label": "K", "key": "K" } },
+    { "type": "wokwi-relay-module", "id": "relay", "top": 225, "left": 320, "attrs": {} },
+    { "type": "wokwi-lcd1602", "id": "lcd", "top": -165, "left": -20, "attrs": { "pins": "i2c", "i2cAddress": "0x27" } }
+  ],
+  "connections": [
+    ["dht:VCC", "esp:3V3", "red", []],
+    ["dht:GND", "esp:GND.1", "black", []],
+    ["dht:SDA", "esp:D15", "green", []],
+    ["ldr:VCC", "esp:3V3", "red", []],
+    ["ldr:GND", "esp:GND.1", "black", []],
+    ["ldr:AO", "esp:D34", "green", []],
+    ["btnN:1.l", "esp:D25", "green", []],
+    ["btnN:2.l", "esp:GND.2", "black", []],
+    ["btnP:1.l", "esp:D26", "green", []],
+    ["btnP:2.l", "esp:GND.2", "black", []],
+    ["btnK:1.l", "esp:D27", "green", []],
+    ["btnK:2.l", "esp:GND.2", "black", []],
+    ["relay:VCC", "esp:5V", "red", []],
+    ["relay:GND", "esp:GND.2", "black", []],
+    ["relay:IN", "esp:D23", "green", []],
+    ["lcd:VCC", "esp:5V", "red", []],
+    ["lcd:GND", "esp:GND.1", "black", []],
+    ["lcd:SDA", "esp:D21", "blue", []],
+    ["lcd:SCL", "esp:D22", "yellow", []]
+  ],
+  "serialMonitor": { "display": "always", "newline": "lf" },
+  "dependencies": {}
+}
