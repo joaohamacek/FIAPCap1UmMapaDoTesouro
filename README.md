@@ -2,8 +2,6 @@
 
 **FIAP | Agricultura Digital | ESP32 + Wokwi | Fase 2**
 
-> **Situação:** código e circuito da versão final preparados; **a versão final com botões de clique ainda precisa ser executada/testada no Wokwi**. Os testes bem-sucedidos realizados anteriormente foram na versão com chaves deslizantes. Completar evidências, nomes do grupo e vídeo antes da entrega.
-
 ## 1. Contexto e objetivo
 
 A startup fictícia FarmTech Solutions desenvolveu um protótipo didático de irrigação automatizada. Um ESP32 lê dados simulados de umidade do solo, pH e indicadores binários NPK, decide quando acionar uma bomba representada por um relé azul e apresenta informações em um LCD 16×2. O objetivo é reduzir irrigações desnecessárias no cenário experimental e demonstrar sensoriamento, lógica de controle e IoT.
@@ -116,24 +114,24 @@ FarmTech_FIAP_GitHub/
 
 ## 11. Vídeo de demonstração
 
-**YouTube, visibilidade NÃO LISTADO, duração máxima de 5 minutos:** `ADICIONAR_LINK_DO_VIDEO`
+O funcionamento completo do sistema de irrigação inteligente FarmTech Solutions pode ser acompanhado no vídeo abaixo.
 
-Demonstrar montagem, telas LCD, três cliques nos botões, ajuste manual do LDR após mudança de NPK, relé ligado e desligado e lógica de controle. Consultar `ROTEIRO_VIDEO.md`.
+**Vídeo demonstrativo — FIAP Fase 2**
 
-## 12. Integrantes
+[Assistir à demonstração no YouTube](https://www.youtube.com/watch?v=7XPyGxeccl8)
 
-- **Nome e RM:** `PREENCHER`
-- **Demais integrantes (se houver):** `PREENCHER`
-- **Turma:** `PREENCHER`
+O vídeo apresenta o monitoramento de umidade, pH e NPK, além do acionamento e desligamento automático da irrigação por meio do ESP32.
 
-## 13. Opcional “Ir Além”
+## 12. Opcional “Ir Além”
 
 Não implementado nesta entrega: previsão do tempo por API externa e análise em R. Os requisitos opcionais não devem ser apresentados como executados.
 
-## 14. Referências
+## 13. Referências
 
 - [Wokwi — documentação](https://docs.wokwi.com/)
 - [Arduino-ESP32 — documentação](https://docs.espressif.com/projects/arduino-esp32/en/latest/)
 - Enunciado **FIAP — Atividade Projeto 2: Iniciando a coleta de dados**, fornecido na disciplina.
 
-**Nota de integridade:** esta é uma implementação educacional e deve ser revisada/adaptada pelos integrantes, com execução real, evidências próprias, justificativa dos critérios e atualização dos campos pendentes antes da submissão.
+
+
+  
