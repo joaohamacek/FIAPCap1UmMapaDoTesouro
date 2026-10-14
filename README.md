@@ -1,103 +1,109 @@
-FarmTech Solutions — Projeto 2: Coleta de Dados e Irrigação Inteligente
-FIAP | Agricultura Digital | Fase 2 | ESP32 + Wokwi + C++
-Protótipo acadêmico de irrigação inteligente com leitura simulada de umidade, pH e indicadores NPK. O ESP32 comanda um módulo relé e apresenta as informações em um display LCD 16×2.
-Assistir à demonstração no YouTube · Abrir o simulador Wokwi
-> **Escopo:** demonstração didática de lógica de automação; não se trata de um sistema agronômico calibrado. Os resultados devem ser interpretados como simulação.
-1. Contexto e objetivo
-No cenário da startup fictícia FarmTech Solutions, o projeto demonstra como informações obtidas de sensores podem orientar o acionamento de uma irrigação automática. O ESP32 recebe leituras de umidade e pH simulados, consulta três indicadores binários NPK e decide se deve energizar um relé que representa a bomba de água.
-A cultura escolhida como referência contextual são hortaliças folhosas, a exemplo da alface. As faixas usadas neste protótipo foram definidas para fins pedagógicos; não representam recomendação de manejo validada para essa cultura.
-2. Componentes e conexões
-Componente	Função na simulação	Conexões
-ESP32 DevKit V1	Executa o controle automático	Controlador central
-Botão verde N	Indicador binário de nitrogênio	GPIO 25 e GND
-Botão verde P	Indicador binário de fósforo	GPIO 26 e GND
-Botão verde K	Indicador binário de potássio	GPIO 27 e GND
-DHT22	Mede umidade do ar, usada como substituta didática da umidade do solo, e temperatura	DATA GPIO 15; 3V3; GND
-LDR / fotoresistor	Gera leitura analógica usada como pH simulado	AO GPIO 34; 3V3; GND
-Módulo relé azul	Representa o comando de uma bomba de irrigação	IN GPIO 23; 5V; GND
-LCD 16×2 I²C	Exibe valores e decisões do controlador	SDA GPIO 21; SCL GPIO 22; 5V; GND
-> **Limitações dos sensores:** o DHT22 não mede umidade do solo, o LDR não mede pH e os botões não quantificam nutrientes. Não há bomba hidráulica, sensor de vazão ou pluviômetro conectados. O acionamento do relé é o indicador da irrigação.
-3. Circuito e evidências do Wokwi
-As imagens a seguir são capturas da simulação e fazem parte da pasta `imagens/`.
-3.1 Circuito completo
-![Montagem do ESP32 com os três botões verdes, DHT22, LDR, LCD e relé no Wokwi](imagens/01-circuito-completo.png)
-3.2 Umidade e pH no LCD
-![Leitura de umidade e pH simulados no LCD](imagens/02-monitoramento-ph-umidade.png)
-3.3 Indicadores NPK
-![Estados dos indicadores NPK e sua classificação no LCD](imagens/03-npk-adequado.png)
-3.4 Irrigação desligada
-![Estado de bomba desligada apresentado no LCD](imagens/04-irrigacao-desligada.png)
-3.5 pH inadequado
-![Indicação de pH fora da faixa no LCD](imagens/05-ph-inadequado.png)
-3.6 Temperatura
-![Temperatura apresentada no LCD](imagens/06-temperatura.png)
-3.7 Evidência complementar do desligamento
-![Captura complementar de bomba desligada](imagens/07-irrigacao-desligada-adicional.png)
-Projeto Wokwi: o link compartilhável específico do projeto ainda precisa ser acrescentado aqui. Para reproduzir a montagem, utilize `sketch.ino`, `diagram.json` e `libraries.txt` deste repositório.
-Evidência ainda não identificada no conjunto de capturas: imagem do LCD exibindo `BOMBA LIGADA` na configuração final com três botões. O vídeo está referenciado na seção 11, mas as imagens deste repositório não devem ser interpretadas como comprovação de todos os cenários de teste.
-4. Funcionamento dos botões NPK
-Os botões N, P e K são conectados aos GPIOs 25, 26 e 27 com `INPUT_PULLUP`. Ao pressionar e soltar um botão, seu indicador alterna entre `0` (inativo) e `1` (ativo). Isso permite realizar os testes com um clique por nutriente, sem manter vários botões pressionados.
-O programa aplica debounce de 45 ms para reduzir falsas alterações de estado por oscilação de contato. No início da simulação, os três indicadores estão desativados (`N=0`, `P=0`, `K=0`).
-Para autorizar a irrigação, o código exige pelo menos dois indicadores ativos:
-```cpp
-nutrientesOK = (int)npk[0] + (int)npk[1] + (int)npk[2] >= 2;
-```
-Essa regra é uma condição lógica da simulação, não uma avaliação química do solo. Depois de alterar um indicador NPK, o operador também deve ajustar manualmente o LDR, simulando uma alteração de pH. O programa não relaciona automaticamente nutrientes e pH.
-5. Leitura de umidade e pH
-O DHT22 fornece umidade relativa do ar, utilizada na simulação como substituto da umidade do solo. A leitura é exibida em porcentagem. Também é apresentada a temperatura fornecida pelo sensor.
-O ESP32 recebe o sinal analógico do LDR pelo GPIO 34, usando uma resolução de 12 bits (0 a 4095). O valor é convertido artificialmente para uma escala de pH de 0 a 14:
+# FarmTech Solutions — Projeto 2: Coleta de Dados e Irrigação Inteligente
+
+**FIAP | Agricultura Digital | ESP32 + Wokwi | Fase 2**
+
+> **Situação:** código e circuito da versão final preparados; **a versão final com botões de clique ainda precisa ser executada/testada no Wokwi**. Os testes bem-sucedidos realizados anteriormente foram na versão com chaves deslizantes. Completar evidências, nomes do grupo e vídeo antes da entrega.
+
+## 1. Contexto e objetivo
+
+A startup fictícia FarmTech Solutions desenvolveu um protótipo didático de irrigação automatizada. Um ESP32 lê dados simulados de umidade do solo, pH e indicadores binários NPK, decide quando acionar uma bomba representada por um relé azul e apresenta informações em um LCD 16×2. O objetivo é reduzir irrigações desnecessárias no cenário experimental e demonstrar sensoriamento, lógica de controle e IoT.
+
+**Cultura de referência do cenário:** hortaliças folhosas, como a alface, **apenas para contextualização**. Os limites de 45/60% de umidade, pH 5,5–7,5 e requisito de dois indicadores NPK ativos são **parâmetros didáticos de software**, não recomendações agronômicas comprovadas para a alface. Um projeto real exigiria caracterização do solo, cultura, estádio fenológico e calibração dos sensores.
+
+## 2. Componentes
+
+| Componente | Função no protótipo | Ligação ao ESP32 |
+|---|---|---|
+| ESP32 DevKit v1 | Controlador central | — |
+| 3 botões verdes N, P, K | Representação binária de nutrientes | GPIO 25, 26, 27 + GND |
+| DHT22 | Umidade do ar **usada como substituto didático** da umidade do solo | DATA GPIO 15; VCC 3V3; GND |
+| Fotoresistor LDR | Leitura analógica representando **pH simulado**, ajustado manualmente | AO GPIO 34; VCC 3V3; GND |
+| Relé azul | Simulação do comando da bomba | IN GPIO 23; VCC 5V; GND |
+| LCD 16×2 I²C | Visualização de umidade, pH, NPK, temperatura e irrigação | SDA GPIO 21; SCL GPIO 22; VCC 5V; GND |
+
+> **Limitações:** nem o LDR mede pH real, nem o DHT22 mede umidade do solo, nem os botões aferem concentrações químicas reais. Não há sensor de chuva, vazão ou bomba física conectada; o relé representa a bomba na simulação.
+
+## 3. Circuito e imagem obrigatória
+
+Abrir `diagram.json` no Wokwi para visualizar a montagem. **Antes de enviar o trabalho, tirar uma captura REAL da versão final com os três botões verdes e o LCD, salvando em `imagens/circuito.png`.** Inserir a imagem abaixo quando estiver disponível:
+
+<!-- Depois de adicionar imagens/circuito.png, remova os sinais de comentario desta linha:
+![Circuito final no Wokwi](imagens/circuito.png)
+-->
+
+**Link do projeto Wokwi:** `ADICIONAR_LINK_PUBLICO_DO_WOKWI`
+
+## 4. Leitura e representação dos nutrientes NPK
+
+Cada botão verde é ligado ao GPIO configurado com `INPUT_PULLUP`. **Um clique completo (pressionar e soltar) alterna o estado registrado** entre 0 (inativo) e 1 (ativo); não é necessário manter pressionado. O software aplica *debounce* de 45 ms para evitar múltiplas alternâncias por um único clique. Inicialmente, N=P=K=0.
+
+- `N=1`, `P=1`, `K=0` significa dois indicadores ativos, atendendo ao critério de autorização.
+- A regra `N+P+K >= 2` é uma **convenção binária experimental**; não descreve teores ou doses reais de nutrientes.
+- **Sempre que o estado NPK for alterado, o operador deve ajustar MANUALMENTE o LDR** para simular o efeito sobre o pH, conforme o enunciado. O sistema **não calcula automaticamente** o pH a partir dos botões.
+
+## 5. Leitura do pH e umidade
+
+O ESP32 lê o LDR com ADC de 12 bits (valores de 0 a 4095) e converte para a escala didática de 0 a 14:
+
 ```cpp
 ph = 14.0f * leituraLDR / 4095.0f;
 ```
-Essa transformação não é uma calibração química. Para alterar o pH durante a execução, abra o controle Illumination (lux) do LDR e mova o ajuste até obter no LCD a faixa desejada. O valor exato de lux pode variar conforme a resposta simulada do componente.
-6. Regras de controle da irrigação
-Critério	Parâmetro didático
-Umidade para ligar	Inferior a 45%
-Umidade para desligar	Igual ou superior a 60%
-pH permitido	5,5 a 7,5, incluindo limites
-NPK suficiente	2 ou 3 indicadores ativos
-Atualização das leituras	Aproximadamente 2 segundos
-Alternância das telas do LCD	Aproximadamente 3 segundos
-Sequência de decisão implementada no código:
-Se o DHT22 retornar uma leitura inválida, o comando de irrigação é desligado por segurança.
-Se o pH estiver fora da faixa ou o NPK for insuficiente, a irrigação é desligada.
-Se as condições forem adequadas e a bomba estiver desligada, a irrigação é acionada quando a umidade for inferior a 45%.
-Se a irrigação estiver ligada, ela é mantida na faixa intermediária e desligada quando a umidade atingir 60%.
-Essa diferença entre os limites de ligar e desligar caracteriza histerese, que evita alternâncias rápidas próximas de um único limite.
-No circuito simulado, `HIGH` no GPIO 23 é o comando de acionamento do módulo relé, e `LOW` o comando de desligamento. O LCD indica o estado lógico da irrigação.
-7. Informações apresentadas no LCD
-O LCD 16×2 alterna automaticamente entre cinco telas:
-Umidade (%) e pH simulado;
-N, P, K (0/1) e condição NPK;
-Irrigação: `BOMBA LIGADA` ou `BOMBA DESLIGADA`;
-Temperatura do DHT22;
-pH e classificação `ADEQUADO` ou `INADEQUADO`.
-O display foi incorporado para tornar os dados acessíveis diretamente na simulação, inclusive quando o Monitor Serial não estiver visível no navegador. O código também possui mensagens de diagnóstico via `Serial`.
-8. Como executar o projeto
-Abra Wokwi e crie um projeto ESP32 Arduino.
-Substitua integralmente o conteúdo de `sketch.ino` e `diagram.json` pelos arquivos deste repositório.
-Instale no Library Manager as bibliotecas indicadas em `libraries.txt`: `DHT sensor library for ESPx` e `LiquidCrystal I2C`.
-Inicie a simulação e aguarde a inicialização do LCD.
-Clique no DHT22 e altere o controle Humidity para simular a umidade.
-Clique no LDR e altere Illumination (lux), acompanhando o valor do pH no LCD.
-Clique individualmente nos botões verdes N, P e K para alternar seus estados.
-Sempre que alterar NPK, reajuste manualmente o LDR para reproduzir a mudança de pH proposta no enunciado.
-Observe a tela de irrigação e o comando do relé nos testes.
-> Se o LCD continuar mostrando a umidade inicial após uma mudança no DHT22, **não considere o teste de desligamento validado**. Confira primeiro se a leitura exibida foi atualizada; um comando do relé só pode ser interpretado junto com o valor efetivamente lido pelo programa.
-9. Cenários de teste e situação das evidências
-ID	Manipulação no Wokwi	Resultado esperado	Registro disponível
-T01	DHT22 30–40%; pH 5,5–7,5; N e P ativos	Bomba liga	Funcionamento informado durante testes anteriores; falta captura identificada da versão final
-T02	Após ligar, elevar a umidade para 70%	Bomba desliga	Funcionamento confirmado em teste anterior com interruptores; houve divergência de leitura na revisão posterior com botões
-T03	Umidade baixa; N e P ativos; pH acima de 7,5	Bomba desliga	Captura de pH inadequado e bomba desligada disponível, sem comprovar isoladamente toda a sequência
-T04	Umidade baixa; pH adequado; somente N ativo	Bomba desliga	Sem evidência individual identificada
-T05	Clicar uma vez em N e outra em P	LCD indica N=1 e P=1	Captura de NPK adequado disponível
-T06	Clicar novamente em N	Indicador N volta a 0	Sem evidência individual identificada
-T07	Simular falha na leitura do DHT22	Desliga relé	Proteção presente no código; teste prático não documentado
-Observação sobre a revisão final: durante os testes, foi relatado que o controle do DHT22 havia sido alterado para aproximadamente 70%, mas o LCD permanecia em 40%. Isso impede afirmar que o teste de desligamento foi inteiramente comprovado nessa revisão. É necessária nova verificação da atualização da leitura para encerrá-lo tecnicamente.
-Os parâmetros e critérios acima são valores experimentais, não dados agronômicos validados.
-10. Organização do repositório
+
+Essa é uma **escala artificial**, não uma curva de calibração de pH. Ajuste a luminosidade em lux e observe o pH exibido no LCD: o relacionamento lux → ADC depende da simulação. O DHT22 fornece umidade relativa do ar em %, tomada aqui como indicador substituto da umidade do solo.
+
+## 6. Lógica de decisão
+
+A cada 2 segundos:
+
+1. Ler a umidade do DHT22 e o ADC do LDR. Os botões são monitorados continuamente.
+2. Verificar `N + P + K >= 2` e `5,5 <= pH <= 7,5`.
+3. Se alguma condição não for atendida, **desligar** a irrigação.
+4. Se as condições forem atendidas, **ligar** quando `umidade < 45%`.
+5. Depois de ligada, **manter ligada** entre 45% e 60%, desligando ao atingir `umidade >= 60%` (*histerese*).
+6. Falha na leitura do DHT22: **desligar o relé por segurança**.
+
+O comando digital `HIGH` no GPIO 23 aciona o relé usado no protótipo; `LOW` desliga. A realimentação visual vem do LCD e do LED de acionamento do relé no Wokwi.
+
+## 7. Telas do LCD
+
+O LCD muda automaticamente a cada 3 segundos entre cinco telas:
+
+1. Umidade (%) e pH simulado.
+2. Estados binários N, P, K e condição NPK.
+3. Estado da irrigação: `BOMBA LIGADA` ou `BOMBA DESLIGADA`.
+4. Temperatura (DHT22).
+5. pH e avaliação `ADEQUADO`/`INADEQUADO`.
+
+O LCD foi incluído como alternativa ao Monitor Serial, que apresentou dificuldades de visualização no navegador durante o desenvolvimento. As mensagens Serial continuam no código.
+
+## 8. Execução no Wokwi
+
+1. Acessar [Wokwi](https://wokwi.com/) e criar um projeto **ESP32 Arduino**.
+2. Substituir **inteiramente** os arquivos `sketch.ino` e `diagram.json` pelos deste repositório.
+3. No **Library Manager**, instalar `DHT sensor library for ESPx` e `LiquidCrystal I2C` (ver `libraries.txt`).
+4. Salvar, iniciar a simulação e esperar aparecer a leitura no LCD.
+5. Ajustar `Humidity` do DHT22; ajustar `Illumination (lux)` do LDR observando o pH exibido.
+6. Clicar uma vez em cada botão N, P ou K para alternar seu indicador; confirmar no LCD.
+7. Reajustar manualmente o LDR ao mudar NPK. Verificar o estado do relé e do LCD.
+
+## 9. Plano de testes e evidências
+
+| ID | Condições de entrada | Resultado esperado | Estado da verificação |
+|---|---|---|---|
+| T01 | Umidade 40%, N=1/P=1/K=0, pH adequado | Bomba liga | Validado na versão anterior com interruptores; retestar botões |
+| T02 | Após T01, elevar umidade a 70% | Bomba desliga | Validado na versão anterior com interruptores; retestar botões |
+| T03 | Umidade baixa, 2 NPK ativos, pH fora da faixa | Bomba desliga | Informado como funcionando na versão anterior; retestar botões |
+| T04 | Umidade baixa, somente 1 NPK ativo, pH adequado | Bomba desliga | Pendente de confirmação |
+| T05 | Clicar uma vez no N e uma vez no P, sem segurar | LCD registra N=1, P=1 | Pendente — versão final com botões |
+| T06 | Após T05, clicar novamente no N | LCD registra N=0 | Pendente — versão final com botões |
+| T07 | Simular falha de leitura DHT22 | Relé desliga | Pendente |
+
+**Evidências a incluir:** `imagens/circuito.png`, `imagens/bomba-ligada.png`, `imagens/bomba-desligada.png`. As imagens precisam ser capturas reais do projeto final; não usar ilustrações como se fossem testes realizados.
+
+## 10. Estrutura do repositório
+
 ```text
-FIAPCap1UmMapaDoTesouro/
+FarmTech_FIAP_GitHub/
 ├── README.md
 ├── sketch.ino
 ├── diagram.json
@@ -105,25 +111,29 @@ FIAPCap1UmMapaDoTesouro/
 ├── ROTEIRO_VIDEO.md
 ├── CHECKLIST_ENTREGA.md
 └── imagens/
-    ├── 01-circuito-completo.png
-    ├── 02-monitoramento-ph-umidade.png
-    ├── 03-npk-adequado.png
-    ├── 04-irrigacao-desligada.png
-    ├── 05-ph-inadequado.png
-    ├── 06-temperatura.png
-    └── 07-irrigacao-desligada-adicional.png
+    └── (adicionar capturas reais da versão final)
 ```
-Repositório: GitHub — FIAPCap1UmMapaDoTesouro
-11. Demonstração em vídeo
-O funcionamento do protótipo foi apresentado em um vídeo de demonstração publicado no YouTube para atender ao entregável da atividade.
-▶ Assistir ao vídeo — FarmTech Solutions, FIAP Fase 2
-Link direto: https://www.youtube.com/watch?v=7XPyGxeccl8
-A atividade solicita vídeo de até 5 minutos e visibilidade Não listado. Essas configurações devem ser conferidas no YouTube Studio antes do envio final.
-12. Integrantes e atividades opcionais
-Integrantes: inserir nomes completos e RMs do grupo antes da submissão, se exigidos pelo portal da disciplina.
-Programa Ir Além (opcional): não implementado nesta entrega. O projeto não utiliza previsão meteorológica por API nem análise estatística em R.
-13. Referências e considerações finais
-Wokwi — documentação do simulador
-Arduino-ESP32 — documentação oficial
-FIAP — Atividade Projeto 2: Iniciando a coleta de dados, enunciado da disciplina.
-O projeto demonstra o uso integrado de sensores simulados, leitura analógica, estados binários, tomada de decisão e acionamento de um relé em ambiente virtual. A aplicação real demandaria sensores apropriados, calibração, critérios de cultivo e dispositivos de proteção elétrica e hidráulica.
+
+## 11. Vídeo de demonstração
+
+**YouTube, visibilidade NÃO LISTADO, duração máxima de 5 minutos:** `ADICIONAR_LINK_DO_VIDEO`
+
+Demonstrar montagem, telas LCD, três cliques nos botões, ajuste manual do LDR após mudança de NPK, relé ligado e desligado e lógica de controle. Consultar `ROTEIRO_VIDEO.md`.
+
+## 12. Integrantes
+
+- **Nome e RM:** `PREENCHER`
+- **Demais integrantes (se houver):** `PREENCHER`
+- **Turma:** `PREENCHER`
+
+## 13. Opcional “Ir Além”
+
+Não implementado nesta entrega: previsão do tempo por API externa e análise em R. Os requisitos opcionais não devem ser apresentados como executados.
+
+## 14. Referências
+
+- [Wokwi — documentação](https://docs.wokwi.com/)
+- [Arduino-ESP32 — documentação](https://docs.espressif.com/projects/arduino-esp32/en/latest/)
+- Enunciado **FIAP — Atividade Projeto 2: Iniciando a coleta de dados**, fornecido na disciplina.
+
+**Nota de integridade:** esta é uma implementação educacional e deve ser revisada/adaptada pelos integrantes, com execução real, evidências próprias, justificativa dos critérios e atualização dos campos pendentes antes da submissão.
