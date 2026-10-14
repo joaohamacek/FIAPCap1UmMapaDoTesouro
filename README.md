@@ -116,9 +116,7 @@ FarmTech_FIAP_GitHub/
 
 ## 11. Vídeo de demonstração
 
-**YouTube, visibilidade NÃO LISTADO, duração máxima de 5 minutos:** `ADICIONAR_LINK_DO_VIDEO`
-
-Demonstrar montagem, telas LCD, três cliques nos botões, ajuste manual do LDR após mudança de NPK, relé ligado e desligado e lógica de controle. Consultar `ROTEIRO_VIDEO.md`.
+https://www.youtube.com/watch?v=7XPyGxeccl8
 
 ## 12. Integrantes
 
